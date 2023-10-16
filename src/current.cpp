@@ -11,8 +11,8 @@
 
 #include "current.h"
 
-bool overCur = false;
-QueueHandle_t currentQueue = xQueueCreate(1, sizeof(float));
+static bool overCur = false;
+static QueueHandle_t currentQueue = xQueueCreate(1, sizeof(float));
 
 void currentTask(void *pvParameters)
 {

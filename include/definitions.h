@@ -22,12 +22,9 @@
 #define PWM_CHANNEL_5 5
 #define PWM_CHANNEL_6 6
 
-#define MIN_DUTY 100
-#define MAX_DUTY 800
 #define MOTOR_PWM_FREQ 20000
 #define MOTOR_PWM_RES 12
 #define MOTOR_DRIVE_DUTY_RES 2048
-#define EDL_SELECTION 0
 
 #define DOOR_LOCK_RELAY_PIN 2
 #define DOOR_LOCK_PIN 16

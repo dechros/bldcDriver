@@ -9,13 +9,14 @@
  * 
  */
 
+#include <Arduino.h>
+#include <SimpleKalmanFilter.h>
 #include "globals.h"
 #include "encoder.h"
 
 #ifndef RPM_H
 #define RPM_H
 
-#define RPM_SAMPLE 250
 #define STEP_TO_REVOLUTION 476
 #define MINUTE_IN_MS 60000.0f
 

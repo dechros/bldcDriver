@@ -11,11 +11,18 @@
 
 #include "encoder.h"
 
-portMUX_TYPE encoderInterruptMux = portMUX_INITIALIZER_UNLOCKED;
+static portMUX_TYPE encoderInterruptMux = portMUX_INITIALIZER_UNLOCKED;
 
-volatile int encoderStep = -1;
-volatile int distance = -1;
-volatile int encoderErrorState = ENCODER_NO_ERROR;
+static volatile int encoderStep = -1;
+static volatile int distance = -1;
+static volatile int encoderErrorState = ENCODER_NO_ERROR;
+
+/**
+ * @brief Returns the indes of encoder step as they are sequential
+ * 
+ * @return int Encoder step index in the sequence
+ */
+static int findEncoderStepIndex();
 
 int getEncoderStep()
 {

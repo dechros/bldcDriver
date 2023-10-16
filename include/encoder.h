@@ -25,7 +25,7 @@
  * 
  * @return int Encoder step
  */
-extern int getpinEncoderStep();
+extern int getEncoderStep();
 
 /**
  * @brief Get the distance as a count of encoder steps
@@ -52,12 +52,5 @@ extern int getEncoderErrorState();
  * 
  */
 extern void IRAM_ATTR encoderInterrupt();
-
-/**
- * @brief Returns the indes of encoder step as they are sequential
- * 
- * @return int Encoder step index in the sequence
- */
-static int findEncoderStepIndex();
 
 #endif

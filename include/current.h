@@ -16,7 +16,7 @@
 #include "definitions.h"
 
 #define CURRENT_SAMPLE 250
-#define MAX_AMPER 3
+#define MAX_AMPER 6
 
 /**
  * @brief Current reading task for the motor
