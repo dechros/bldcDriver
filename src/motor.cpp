@@ -22,11 +22,13 @@ static void driveMotor(int motorRotation, int duty);
 
 void motorTask(void *pvParameters)
 {
-    int duty = 0;
+    float duty = 0;
     encoderInterrupt();
     while (1)
     {
         float currentRpm = getRpm();
+
+        Serial.println(currentRpm);
 
         int requestedRpm = 0;
         int requestedRotation = 0;
@@ -36,11 +38,11 @@ void motorTask(void *pvParameters)
 
         if (currentRpm < requestedRpm)
         {
-            duty++;
+            duty+=0.1;
         }
         else if (currentRpm > requestedRpm)
         {
-            duty--;
+            duty-=0.1;
         }
 
         if (duty > MAX_DUTY)
@@ -57,8 +59,7 @@ void motorTask(void *pvParameters)
             duty = MIN_DUTY;
         }
         */
-        Serial.println(requestedRpm);
-        driveMotor(requestedRotation, duty);
+        driveMotor(requestedRotation, (int)duty);
         vTaskDelay(pdMS_TO_TICKS(1));
     }
 }

@@ -71,7 +71,6 @@ void setup()
     GPIO.func_out_sel_cfg[H3_PIN].inv_sel = 0;
 
     xTaskCreatePinnedToCore(currentTask, "currentTask", 2048, NULL, 1, NULL, 0);
-    xTaskCreatePinnedToCore(calculateRpmTask, "calculateRpmTask", 2048, NULL, 1, NULL, 0);
     xTaskCreatePinnedToCore(motorTask, "motorTask", 2048, NULL, 1, NULL, 0);
     Serial.println("Setup Completed.");
 }

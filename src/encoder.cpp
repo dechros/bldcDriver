@@ -16,6 +16,8 @@ static portMUX_TYPE encoderInterruptMux = portMUX_INITIALIZER_UNLOCKED;
 static volatile int encoderStep = -1;
 static volatile int distance = -1;
 static volatile int encoderErrorState = ENCODER_NO_ERROR;
+static volatile unsigned long lastStepTime = -1;
+static volatile float rpm = 0;
 
 /**
  * @brief Returns the indes of encoder step as they are sequential
@@ -23,6 +25,15 @@ static volatile int encoderErrorState = ENCODER_NO_ERROR;
  * @return int Encoder step index in the sequence
  */
 static int findEncoderStepIndex();
+
+float getRpm()
+{
+    float retVal = -1;
+    portENTER_CRITICAL(&encoderInterruptMux);
+    retVal = rpm;
+    portEXIT_CRITICAL(&encoderInterruptMux);
+    return retVal;
+}
 
 int getEncoderStep()
 {
@@ -37,7 +48,7 @@ int getDistance()
 {
     int retVal = -1;
     portENTER_CRITICAL(&encoderInterruptMux);
-    retVal = distance;
+    retVal = abs(distance);
     portEXIT_CRITICAL(&encoderInterruptMux);
     return retVal;
 }
@@ -91,6 +102,11 @@ void IRAM_ATTR encoderInterrupt()
         {
             encoderErrorState = ENCODER_STEP_MISSING_ERROR;
         }
+
+        unsigned long currentTime = micros();
+        unsigned long stepTimeDifference = currentTime - lastStepTime; 
+        lastStepTime = currentTime;
+        rpm = (1.0 / stepTimeDifference) * 60000000.0 / STEP_TO_REVOLUTION;
 
         oldIndex = newIndex;
     }

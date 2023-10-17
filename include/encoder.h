@@ -19,6 +19,14 @@
 #define ENCODER_NO_ERROR 0
 #define ENCODER_STEP_READING_ERROR 1
 #define ENCODER_STEP_MISSING_ERROR 2
+#define STEP_TO_REVOLUTION 476
+
+/**
+ * @brief Get the Rpm from interrupt
+ * 
+ * @return float RPM pof two different steps 
+ */
+float getRpm();
 
 /**
  * @brief Get the encoder step

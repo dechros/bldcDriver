@@ -64,6 +64,7 @@
   "utility": "cpp",
   "typeinfo": "cpp",
   "globals.h": "c",
-  "rpm.h": "c"
+  "rpm.h": "c",
+  "iterator": "cpp"
 }
 }

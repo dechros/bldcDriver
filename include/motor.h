@@ -12,7 +12,6 @@
 #ifndef MOTOR_H
 #define MOTOR_H
 
-#include "rpm.h"
 #include "encoder.h"
 #include "current.h"
 
