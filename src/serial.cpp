@@ -26,7 +26,7 @@ void serialTask(void *param)
             if (bytesRead > 0)
             {
                 inputBuffer[bytesRead] = '\0';
-                xQueueSend(inputQueue, inputBuffer, portMAX_DELAY);
+                xQueueSend(inputQueue, inputBuffer, 0);
             }
         }
         if (xQueueReceive(outputQueue, outputBuffer, 0))
@@ -40,7 +40,7 @@ void serialTask(void *param)
 String serialRead()
 {
     char inputBuffer[MAX_INPUT_LENGTH];
-    if (xQueueReceive(inputQueue, inputBuffer, portMAX_DELAY))
+    if (xQueueReceive(inputQueue, inputBuffer, 0))
     {
         return String(inputBuffer);
     }
@@ -49,5 +49,10 @@ String serialRead()
 
 void serialWrite(const char *message)
 {
-    xQueueSend(outputQueue, message, portMAX_DELAY);
+    xQueueSend(outputQueue, message, 0);
+}
+
+void serialWrite(String message)
+{
+    xQueueSend(outputQueue, message.c_str(), 0);
 }

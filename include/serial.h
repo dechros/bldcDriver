@@ -47,4 +47,14 @@ extern String serialRead();
  */
 extern void serialWrite(const char *message);
 
+/**
+ * @brief Write a message to the output queue.
+ *
+ * This function writes a message to the output queue, which is then printed to
+ * the serial console by the serialTask.
+ *
+ * @param message The message to be written to the output queue.
+ */
+extern void serialWrite(String message);
+
 #endif

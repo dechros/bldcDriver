@@ -45,8 +45,7 @@ void motorTask(void *pvParameters)
         checkRpmResetTime();
         xQueuePeek(rotationQueue, &requestedRotation, portMAX_DELAY);
         xQueuePeek(rpmQueue, &requestedRpm, portMAX_DELAY);
-        String outputString = String(requestedRpm, 2) + " " + String(currentRpm, 2);
-        serialWrite(outputString.c_str());
+        serialWrite(String(requestedRpm) + " " + String(currentRpm));
         myPID.Compute();
         /*
         if (checkOverCurrent() == true)
