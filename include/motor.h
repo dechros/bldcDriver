@@ -19,6 +19,9 @@
 
 #define MIN_DUTY 0
 #define MAX_DUTY 500
+#define KP 2.0
+#define KI 8.0
+#define KD 0.001
 
 /**
  * @brief Motor driving task

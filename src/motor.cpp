@@ -18,10 +18,6 @@ static double currentRpm = 0;
 static double oldRpm = 0;
 static int rpmCount = 0;
 
-static double kp = 2.0;
-static double ki = 8.0;
-static double kd = 0.001;
-
 /**
  * @brief The function that drives motor according to encoder step
  *
@@ -39,8 +35,8 @@ void motorTask(void *pvParameters)
     double duty = 0;
     double requestedRpm = 0;
     int requestedRotation = 0;
-    PID myPID(&currentRpm, &duty, &requestedRpm, kp, ki, kd, DIRECT);
-    myPID.SetMode(AUTOMATIC)
+    PID myPID(&currentRpm, &duty, &requestedRpm, KP, KI, KD, DIRECT);
+    myPID.SetMode(AUTOMATIC);
     myPID.SetOutputLimits(MIN_DUTY, MAX_DUTY);
     encoderInterrupt();
     while (1)
