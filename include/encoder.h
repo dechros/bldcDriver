@@ -22,11 +22,17 @@
 #define STEP_TO_REVOLUTION 476
 
 /**
- * @brief Get the Rpm from interrupt
+ * @brief Resets RPM of the motor
  * 
- * @return float RPM pof two different steps 
  */
-float getRpm();
+extern void resetRpm();
+
+/**
+ * @brief Get the RPM from interrupt
+ * 
+ * @return float RPM of two different steps 
+ */
+extern float getRpm();
 
 /**
  * @brief Get the encoder step

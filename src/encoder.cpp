@@ -26,6 +26,13 @@ static volatile float rpm = 0;
  */
 static int findEncoderStepIndex();
 
+void resetRpm()
+{
+    portENTER_CRITICAL(&encoderInterruptMux);
+    rpm = 0;
+    portEXIT_CRITICAL(&encoderInterruptMux);
+}
+
 float getRpm()
 {
     float retVal = -1;

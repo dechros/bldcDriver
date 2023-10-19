@@ -12,6 +12,7 @@
 #include "definitions.h"
 #include "globals.h"
 #include "motor.h"
+#include "serial.h"
 
 #include <soc/rtc.h>
 #include <rom/rtc.h>
@@ -72,7 +73,8 @@ void setup()
 
     xTaskCreatePinnedToCore(currentTask, "currentTask", 2048, NULL, 1, NULL, 0);
     xTaskCreatePinnedToCore(motorTask, "motorTask", 2048, NULL, 1, NULL, 0);
-    Serial.println("Setup Completed.");
+    xTaskCreatePinnedToCore(serialTask, "serialTask", 2048, NULL, 1, NULL, 0);
+    serialWrite("Setup Completed.");
 }
 
 static int motorRotation = 0;
@@ -80,9 +82,9 @@ static int rpm = 0;
 
 void loop()
 {
-    if (Serial.available() > 0)
+    String gelen = serialRead();
+    if (!gelen.isEmpty())
     {
-        String gelen = Serial.readString();
         if (gelen == "R")
         {
             motorRotation = 1;
@@ -96,7 +98,7 @@ void loop()
             rpm = gelen.toInt();
         }
     }
-    setRpm(rpm);
+    setRpm((double)rpm);
     setRotation(motorRotation);
     vTaskDelay(pdMS_TO_TICKS(1));
 }

@@ -12,8 +12,10 @@
 #ifndef MOTOR_H
 #define MOTOR_H
 
+#include <PID_v1.h>
 #include "encoder.h"
 #include "current.h"
+#include "serial.h"
 
 #define MIN_DUTY 0
 #define MAX_DUTY 500
@@ -37,6 +39,6 @@ extern void setRotation(int pinRotation);
  * 
  * @param pinDuty RPM of the motor
  */
-extern void setRpm(int pinRpm);
+extern void setRpm(double pinRpm);
 
 #endif
