@@ -12,11 +12,7 @@
 #include "motor.h"
 
 static QueueHandle_t rotationQueue = xQueueCreate(1, sizeof(double));
-static QueueHandle_t rpmQueue = xQueueCreate(1, sizeof(double));
-
-static double currentRpm = 0;
-static double oldRpm = 0;
-static int rpmCount = 0;
+static QueueHandle_t rpmQueue = xQueueCreate(1, sizeof(int));
 
 /**
  * @brief The function that drives motor according to encoder step
@@ -27,50 +23,43 @@ static void driveMotor(int motorRotation, int duty);
 /**
  * @brief Checks and resets if RPM values are sequential
  *
+ * @param float Current RPM
+ * @return float Current RPM may be reseted
  */
-static void checkRpmResetTime();
+static float checkRpmResetTime(float currentRpm);
 
 void motorTask(void *pvParameters)
 {
-    double duty = 0;
-    double requestedRpm = 0;
-    int requestedRotation = 0;
-    PID myPID(&currentRpm, &duty, &requestedRpm, KP, KI, KD, DIRECT);
-    myPID.SetMode(AUTOMATIC);
-    myPID.SetOutputLimits(MIN_DUTY, MAX_DUTY);
+    float duty = 0;
     encoderInterrupt();
     while (1)
     {
-        currentRpm = (double)getRpm();
-        checkRpmResetTime();
+        int requestedRpm = 0;
+        int requestedRotation = 0;
+        float currentRpm = getRpm();
         xQueuePeek(rotationQueue, &requestedRotation, portMAX_DELAY);
         xQueuePeek(rpmQueue, &requestedRpm, portMAX_DELAY);
-        serialWrite(String(requestedRpm) + " " + String(currentRpm));
-        myPID.Compute();
-        /*
-        if (checkOverCurrent() == true)
+        serialWrite(String(requestedRpm) + " " + String(currentRpm) + " " + String(duty));
+        currentRpm = checkRpmResetTime(currentRpm);
+        if (currentRpm < requestedRpm)
+        {
+            duty+=0.1;
+        }
+        else if (currentRpm > requestedRpm)
+        {
+            duty-=0.1;
+        }
+        if (duty < MIN_DUTY)
         {
             duty = MIN_DUTY;
         }
-        */
+        else if (duty > MAX_DUTY)
+        {
+            duty = MAX_DUTY;
+        }
         driveMotor(requestedRotation, (int)duty);
         vTaskDelay(pdMS_TO_TICKS(1));
     }
-}
-
-static void checkRpmResetTime()
-{
-    if (oldRpm == currentRpm)
-    {
-        rpmCount++;
-    }
-    if (rpmCount > 250)
-    {
-        resetRpm();
-        currentRpm = 0;
-        rpmCount = 0;
-    }
-    oldRpm = currentRpm;
 }
 
 static void driveMotor(int motorRotation, int duty)
@@ -136,7 +125,25 @@ void setRotation(int pinRotation)
     xQueueOverwrite(rotationQueue, &pinRotation);
 }
 
-void setRpm(double pinRpm)
+void setRpm(int pinRpm)
 {
     xQueueOverwrite(rpmQueue, &pinRpm);
+}
+
+static float checkRpmResetTime(float currentRpm)
+{
+    static int rpmCount = 0;
+    static float oldRpm = 0;
+    if (oldRpm == currentRpm)
+    {
+        rpmCount++;
+    }
+    if (rpmCount > 250)
+    {
+        resetRpm();
+        currentRpm = 0;
+        rpmCount = 0;
+    }
+    oldRpm = currentRpm;
+    return currentRpm;
 }

@@ -98,7 +98,7 @@ void loop()
             rpm = gelen.toInt();
         }
     }
-    setRpm((double)rpm);
+    setRpm(rpm);
     setRotation(motorRotation);
     vTaskDelay(pdMS_TO_TICKS(1));
 }

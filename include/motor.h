@@ -17,8 +17,10 @@
 #include "current.h"
 #include "serial.h"
 
+#define MAX_RPM 40
 #define MIN_DUTY 0
 #define MAX_DUTY 500
+#define RAMP_TIME 3
 #define KP 2.0
 #define KI 9.0
 #define KD 0.002
@@ -42,6 +44,6 @@ extern void setRotation(int pinRotation);
  * 
  * @param pinDuty RPM of the motor
  */
-extern void setRpm(double pinRpm);
+extern void setRpm(int pinRpm);
 
 #endif
