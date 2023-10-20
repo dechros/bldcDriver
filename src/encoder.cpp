@@ -14,9 +14,9 @@
 static portMUX_TYPE encoderInterruptMux = portMUX_INITIALIZER_UNLOCKED;
 
 static volatile int encoderStep = -1;
-static volatile int distance = -1;
+static volatile int distance = 0;
 static volatile int encoderErrorState = ENCODER_NO_ERROR;
-static volatile unsigned long lastStepTime = -1;
+static volatile unsigned long lastStepTime = 0;
 static volatile float rpm = 0;
 
 /**
@@ -51,22 +51,6 @@ int getEncoderStep()
     return retVal;
 }
 
-int getDistance()
-{
-    int retVal = -1;
-    portENTER_CRITICAL(&encoderInterruptMux);
-    retVal = abs(distance);
-    portEXIT_CRITICAL(&encoderInterruptMux);
-    return retVal;
-}
-
-void resetDistance()
-{
-    portENTER_CRITICAL(&encoderInterruptMux);
-    distance = 0;
-    portEXIT_CRITICAL(&encoderInterruptMux);
-}
-
 int getEncoderErrorState()
 {
     int retVal = -1;
@@ -83,9 +67,8 @@ void IRAM_ATTR encoderInterrupt()
     int encoderaState = digitalRead(ENCODER_A_PIN);
     int encoderbState = digitalRead(ENCODER_B_PIN);
     int encodercState = digitalRead(ENCODER_C_PIN);
-
     encoderStep = encoderaState * 100 + encoderbState * 10 + encodercState;
-
+    unsigned long stepTimeDifference = 0;
     if (encoderStep == 0 || encoderStep == 111)
     {
         encoderErrorState = ENCODER_STEP_READING_ERROR;
@@ -97,27 +80,19 @@ void IRAM_ATTR encoderInterrupt()
 
         int indexDiff = newIndex - oldIndex;
 
-        if (indexDiff == 1 || indexDiff == -5)
+        if(indexDiff == 1 || indexDiff == -5 || indexDiff == -1 || indexDiff == 5)
         {
-            distance++;
+            unsigned long currentTime = micros();
+            stepTimeDifference = currentTime - lastStepTime; 
+            lastStepTime = currentTime;
+            rpm = (1.0 / stepTimeDifference) * 60000000.0 / STEP_TO_REVOLUTION;
         }
-        else if (indexDiff == -1 || indexDiff == 5)
-        {
-            distance--;
-        }
-        else if (indexDiff != 0)
+        else if(indexDiff != 0)
         {
             encoderErrorState = ENCODER_STEP_MISSING_ERROR;
         }
-
-        unsigned long currentTime = micros();
-        unsigned long stepTimeDifference = currentTime - lastStepTime; 
-        lastStepTime = currentTime;
-        rpm = (1.0 / stepTimeDifference) * 60000000.0 / STEP_TO_REVOLUTION;
-
         oldIndex = newIndex;
     }
-
     portEXIT_CRITICAL(&encoderInterruptMux);
 }
 
