@@ -28,6 +28,8 @@ static void driveMotor(int motorRotation, int duty);
  */
 static float checkRpmResetTime(float currentRpm);
 
+static float checkRpmAbsurdity(float currentRpm);
+
 void motorTask(void *pvParameters)
 {
     float duty = 0;
@@ -40,6 +42,7 @@ void motorTask(void *pvParameters)
         xQueuePeek(rotationQueue, &requestedRotation, portMAX_DELAY);
         xQueuePeek(rpmQueue, &requestedRpm, portMAX_DELAY);
         serialWrite(String(requestedRpm) + " " + String(currentRpm) + " " + String(duty));
+        currentRpm = checkRpmAbsurdity(currentRpm);
         currentRpm = checkRpmResetTime(currentRpm);
         if (currentRpm < requestedRpm)
         {
@@ -128,6 +131,17 @@ void setRotation(int pinRotation)
 void setRpm(int pinRpm)
 {
     xQueueOverwrite(rpmQueue, &pinRpm);
+}
+
+static float checkRpmAbsurdity(float currentRpm)
+{
+    static float oldRpm = currentRpm;
+    if (currentRpm > 100)
+    {
+        currentRpm = oldRpm;
+    }
+    oldRpm = currentRpm;
+    return currentRpm;
 }
 
 static float checkRpmResetTime(float currentRpm)
