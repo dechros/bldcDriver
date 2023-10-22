@@ -47,7 +47,7 @@ void motorTask(void *pvParameters)
         float currentRpm = getRpm();
         xQueuePeek(rotationQueue, &requestedRotation, portMAX_DELAY);
         xQueuePeek(rpmQueue, &requestedRpm, portMAX_DELAY);
-        //serialWrite(String(requestedRpm) + " " + String(currentRpm) + " " + String(duty));
+        // serialWrite(String(requestedRpm) + " " + String(currentRpm) + " " + String(duty));
         currentRpm = checkRpmAbsurdity(currentRpm);
         currentRpm = checkRpmResetTime(currentRpm);
         if (currentRpm < requestedRpm)
@@ -57,6 +57,11 @@ void motorTask(void *pvParameters)
         else if (currentRpm > requestedRpm)
         {
             duty -= DUTY_RAMP_VAL;
+        }
+        float current = getCurrent();
+        if (checkCurrentError() == true)
+        {
+            duty = MIN_DUTY;
         }
         if (duty < MIN_DUTY)
         {

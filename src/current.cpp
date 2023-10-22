@@ -11,7 +11,6 @@
 
 #include "current.h"
 
-static bool overCur = false;
 static QueueHandle_t currentQueue = xQueueCreate(1, sizeof(float));
 
 void currentTask(void *pvParameters)
@@ -44,14 +43,15 @@ float getCurrent()
     return retVal;
 }
 
-bool checkOverCurrent()
+bool checkCurrentError()
 {
+    static bool currentErrorState = AMPER_NO_ERROR;
     bool retVal = false;
     float amper = 0;
     xQueuePeek(currentQueue, &amper, portMAX_DELAY);
-    if (overCur == true || amper > MAX_AMPER)
+    if (currentErrorState == AMPER_OVER_CURRENT || amper > MAX_AMPER)
     {
-        overCur = true;
+        currentErrorState = AMPER_OVER_CURRENT;
         retVal = true;
     }
     return retVal;

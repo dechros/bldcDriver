@@ -15,7 +15,9 @@
 #include "globals.h"
 #include "definitions.h"
 
-#define CURRENT_SAMPLE 250
+#define AMPER_NO_ERROR 0
+#define AMPER_OVER_CURRENT 1
+#define CURRENT_SAMPLE 25
 #define MAX_AMPER 6
 
 /**
@@ -38,6 +40,6 @@ extern float getCurrent();
  * @return true Overcurrent is present
  * @return false Overcurrent is not present
  */
-extern bool checkOverCurrent();
+extern bool checkCurrentError();
 
 #endif
