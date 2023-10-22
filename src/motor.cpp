@@ -18,7 +18,7 @@ static QueueHandle_t rpmQueue = xQueueCreate(1, sizeof(int));
  * @brief The function that drives motor according to encoder step
  *
  */
-static void driveMotor(int motorRotation, int duty);
+static void driveMotor(int pinRotation, int pinDuty);
 
 /**
  * @brief Checks and resets if RPM values are sequential
@@ -26,15 +26,15 @@ static void driveMotor(int motorRotation, int duty);
  * @param float Current RPM
  * @return float Corrected RPM value
  */
-static float checkRpmResetTime(float currentRpm);
+static float checkRpmResetTime(float pinRpm);
 
 /**
  * @brief Checks if the RPM value is too high
  *
- * @param currentRpm Current RPM value
+ * @param pinRpm Current RPM value
  * @return float Corrected RPM value
  */
-static float checkRpmAbsurdity(float currentRpm);
+static float checkRpmAbsurdity(float pinRpm);
 
 void motorTask(void *pvParameters)
 {
@@ -42,23 +42,27 @@ void motorTask(void *pvParameters)
     encoderInterrupt();
     while (1)
     {
-        int requestedRpm = 0;
+        int targetRpm = 0;
         int requestedRotation = 0;
-        float currentRpm = getRpm();
+        float rpm = getRpm();
         xQueuePeek(rotationQueue, &requestedRotation, portMAX_DELAY);
-        xQueuePeek(rpmQueue, &requestedRpm, portMAX_DELAY);
-        // serialWrite(String(requestedRpm) + " " + String(currentRpm) + " " + String(duty));
-        currentRpm = checkRpmAbsurdity(currentRpm);
-        currentRpm = checkRpmResetTime(currentRpm);
-        if (currentRpm < requestedRpm)
+        xQueuePeek(rpmQueue, &targetRpm, portMAX_DELAY);
+        rpm = checkRpmAbsurdity(rpm);
+        rpm = checkRpmResetTime(rpm);
+        if (rpm < targetRpm)
         {
             duty += DUTY_RAMP_VAL;
         }
-        else if (currentRpm > requestedRpm)
+        else if (rpm > targetRpm)
         {
             duty -= DUTY_RAMP_VAL;
         }
         float current = getCurrent();
+        if (current >= DANGER_AMPER)
+        {
+            /* TODO: Continue */
+            duty -= DUTY_RAMP_VAL * 10;
+        }
         if (checkCurrentError() == true)
         {
             duty = MIN_DUTY;
@@ -71,25 +75,26 @@ void motorTask(void *pvParameters)
         {
             duty = MAX_DUTY;
         }
+        serialWrite("Tar RPM : " + String(targetRpm) + " | Cur RPM : " + String(rpm) + " | Duty : " + String(duty) + " | Amper : " + String(current));
         driveMotor(requestedRotation, (int)duty);
         vTaskDelay(pdMS_TO_TICKS(1));
     }
 }
 
-static void driveMotor(int motorRotation, int duty)
+static void driveMotor(int pinRotation, int pinDuty)
 {
     int highPwmDuty = 0;
     int lowPwmDuty = 0;
 
-    if (motorRotation == 0)
+    if (pinRotation == 0)
     {
-        highPwmDuty = MOTOR_DRIVE_DUTY_RES + duty;
-        lowPwmDuty = MOTOR_DRIVE_DUTY_RES - duty;
+        highPwmDuty = MOTOR_DRIVE_DUTY_RES + pinDuty;
+        lowPwmDuty = MOTOR_DRIVE_DUTY_RES - pinDuty;
     }
-    if (motorRotation == 1)
+    if (pinRotation == 1)
     {
-        highPwmDuty = MOTOR_DRIVE_DUTY_RES - duty;
-        lowPwmDuty = MOTOR_DRIVE_DUTY_RES + duty;
+        highPwmDuty = MOTOR_DRIVE_DUTY_RES - pinDuty;
+        lowPwmDuty = MOTOR_DRIVE_DUTY_RES + pinDuty;
     }
 
     int encoderStep = getEncoderStep();
@@ -144,22 +149,22 @@ void setRpm(int pinRpm)
     xQueueOverwrite(rpmQueue, &pinRpm);
 }
 
-static float checkRpmAbsurdity(float currentRpm)
+static float checkRpmAbsurdity(float pinRpm)
 {
-    static float oldRpm = currentRpm;
-    if (currentRpm > MAX_RPM)
+    static float oldRpm = pinRpm;
+    if (pinRpm > MAX_RPM)
     {
-        currentRpm = oldRpm;
+        pinRpm = oldRpm;
     }
-    oldRpm = currentRpm;
-    return currentRpm;
+    oldRpm = pinRpm;
+    return pinRpm;
 }
 
-static float checkRpmResetTime(float currentRpm)
+static float checkRpmResetTime(float pinRpm)
 {
     static int rpmCount = 0;
     static float oldRpm = 0;
-    if (oldRpm == currentRpm)
+    if (oldRpm == pinRpm)
     {
         rpmCount++;
     }
@@ -170,9 +175,9 @@ static float checkRpmResetTime(float currentRpm)
     if (rpmCount > RPM_RESET_COUNT)
     {
         resetRpm();
-        currentRpm = 0;
+        pinRpm = 0;
         rpmCount = 0;
     }
-    oldRpm = currentRpm;
-    return currentRpm;
+    oldRpm = pinRpm;
+    return pinRpm;
 }

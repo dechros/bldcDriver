@@ -20,7 +20,8 @@
 #define MAX_RPM 70
 #define MIN_DUTY 0
 #define MAX_DUTY 500
-#define DUTY_RAMP_VAL 0.5
+#define DANGER_AMPER 5
+#define DUTY_RAMP_VAL 0.25
 #define RPM_RESET_COUNT 250
 
 /**

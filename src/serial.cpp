@@ -29,7 +29,7 @@ void serialTask(void *param)
                 xQueueSend(inputQueue, inputBuffer, portMAX_DELAY);
             }
         }
-        if (xQueueReceive(outputQueue, outputBuffer, 0))
+        if (xQueueReceive(outputQueue, outputBuffer, portMAX_DELAY))
         {
             Serial.println(outputBuffer);
         }
@@ -49,10 +49,10 @@ String serialRead()
 
 void serialWrite(const char *message)
 {
-    xQueueSend(outputQueue, message, portMAX_DELAY);
+    xQueueSend(outputQueue, message, 0);
 }
 
 void serialWrite(String message)
 {
-    xQueueSend(outputQueue, message.c_str(), portMAX_DELAY);
+    xQueueSend(outputQueue, message.c_str(), 0);
 }
