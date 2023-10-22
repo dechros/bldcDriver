@@ -24,10 +24,16 @@ static void driveMotor(int motorRotation, int duty);
  * @brief Checks and resets if RPM values are sequential
  *
  * @param float Current RPM
- * @return float Current RPM may be reseted
+ * @return float Corrected RPM value
  */
 static float checkRpmResetTime(float currentRpm);
 
+/**
+ * @brief Checks if the RPM value is too high
+ *
+ * @param currentRpm Current RPM value
+ * @return float Corrected RPM value
+ */
 static float checkRpmAbsurdity(float currentRpm);
 
 void motorTask(void *pvParameters)
@@ -41,16 +47,16 @@ void motorTask(void *pvParameters)
         float currentRpm = getRpm();
         xQueuePeek(rotationQueue, &requestedRotation, portMAX_DELAY);
         xQueuePeek(rpmQueue, &requestedRpm, portMAX_DELAY);
-        serialWrite(String(requestedRpm) + " " + String(currentRpm) + " " + String(duty));
+        //serialWrite(String(requestedRpm) + " " + String(currentRpm) + " " + String(duty));
         currentRpm = checkRpmAbsurdity(currentRpm);
         currentRpm = checkRpmResetTime(currentRpm);
         if (currentRpm < requestedRpm)
         {
-            duty+=0.1;
+            duty += DUTY_RAMP_VAL;
         }
         else if (currentRpm > requestedRpm)
         {
-            duty-=0.1;
+            duty -= DUTY_RAMP_VAL;
         }
         if (duty < MIN_DUTY)
         {
@@ -136,7 +142,7 @@ void setRpm(int pinRpm)
 static float checkRpmAbsurdity(float currentRpm)
 {
     static float oldRpm = currentRpm;
-    if (currentRpm > 100)
+    if (currentRpm > MAX_RPM)
     {
         currentRpm = oldRpm;
     }
@@ -152,7 +158,11 @@ static float checkRpmResetTime(float currentRpm)
     {
         rpmCount++;
     }
-    if (rpmCount > 250)
+    else
+    {
+        rpmCount = 0;
+    }
+    if (rpmCount > RPM_RESET_COUNT)
     {
         resetRpm();
         currentRpm = 0;

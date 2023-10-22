@@ -17,13 +17,11 @@
 #include "current.h"
 #include "serial.h"
 
-#define MAX_RPM 40
+#define MAX_RPM 70
 #define MIN_DUTY 0
 #define MAX_DUTY 500
-#define RAMP_TIME 3
-#define KP 2.0
-#define KI 9.0
-#define KD 0.002
+#define DUTY_RAMP_VAL 0.5
+#define RPM_RESET_COUNT 250
 
 /**
  * @brief Motor driving task
