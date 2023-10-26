@@ -15,7 +15,6 @@ static portMUX_TYPE rpmCounterMux = portMUX_INITIALIZER_UNLOCKED;
 
 static volatile int rpm = 0;
 static unsigned long lastUpdateTime = 0;
-static const unsigned long DEBOUNCE_DELAY_MICROS = 100000;
 
 void IRAM_ATTR increaseRpm()
 {

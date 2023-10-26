@@ -19,6 +19,7 @@
 #define AMPER_OVER_CURRENT 1
 #define CURRENT_SAMPLE 100
 #define MAX_AMPER 6
+#define DANGER_AMPER 5
 
 /**
  * @brief Current reading task for the motor

@@ -33,6 +33,61 @@
 #include <BLEUtils.h>
 #include <BLE2902.h>
 
+portMUX_TYPE pwmMutex = portMUX_INITIALIZER_UNLOCKED;
+QueueHandle_t dutyQueue = xQueueCreate(1, sizeof(int));
+volatile bool lastDirState = LOW;
+volatile unsigned long highStartTime = 0;
+volatile unsigned long lowStartTime = 0;
+volatile unsigned long highTime = 0;
+volatile unsigned long lowTime = 0;
+
+void IRAM_ATTR pwmInterrupt()
+{
+    portENTER_CRITICAL_ISR(&pwmMutex);
+    bool currentDirState = digitalRead(DIR_PIN);
+    if (currentDirState != lastDirState)
+    {
+        if (currentDirState == HIGH)
+        {
+            highStartTime = micros();
+            if (lowStartTime != 0)
+            {
+                lowTime += highStartTime - lowStartTime;
+            }
+        }
+        else
+        {
+            lowStartTime = micros();
+            if (highStartTime != 0)
+            {
+                highTime += lowStartTime - highStartTime;
+            }
+        }
+        if (lowTime > 0 && highTime > 0)
+        {
+            int duty = (highTime * 100) / (lowTime + highTime);
+            BaseType_t higherPriorityTaskWoken = pdFALSE;
+            xQueueOverwriteFromISR(dutyQueue, &duty, &higherPriorityTaskWoken);
+            highStartTime = 0;
+            lowStartTime = 0;
+            highTime = 0;
+            lowTime = 0;
+        }
+        lastDirState = currentDirState;
+    }
+    portEXIT_CRITICAL_ISR(&pwmMutex);
+}
+
+void loop()
+{
+    int localDuty = 0;
+    if (xQueuePeek(dutyQueue, &localDuty, pdMS_TO_TICKS(1)) == pdTRUE)
+    {
+        Serial.println(localDuty);
+    }
+    vTaskDelay(pdMS_TO_TICKS(1));
+}
+
 void setup()
 {
     Serial.begin(115200);
@@ -45,6 +100,7 @@ void setup()
     pinMode(FTS_PIN, INPUT);
     pinMode(STOP_PIN, INPUT);
     pinMode(OPEN_PIN, INPUT);
+    pinMode(DIR_PIN, INPUT);
 
     pinMode(H1_PIN, OUTPUT);
     pinMode(H2_PIN, OUTPUT);
@@ -62,10 +118,12 @@ void setup()
     attachInterrupt(digitalPinToInterrupt(OPEN_PIN), increaseRpm, RISING);
     attachInterrupt(digitalPinToInterrupt(CLOSE_PIN), rotationInterrupt, RISING);
     attachInterrupt(digitalPinToInterrupt(STOP_PIN), rotationInterrupt, RISING);
+    attachInterrupt(digitalPinToInterrupt(DIR_PIN), pwmInterrupt, CHANGE);
 
     ledcSetup(PWM_CHANNEL_1, MOTOR_PWM_FREQ, MOTOR_PWM_RES);
     ledcSetup(PWM_CHANNEL_2, MOTOR_PWM_FREQ, MOTOR_PWM_RES);
     ledcSetup(PWM_CHANNEL_3, MOTOR_PWM_FREQ, MOTOR_PWM_RES);
+    ledcSetup(PWM_CHANNEL_4, MOTOR_PWM_FREQ, MOTOR_PWM_RES);
 
     ledcAttachPin(H1_PIN, PWM_CHANNEL_1);
     ledcAttachPin(L1_PIN, PWM_CHANNEL_1);
@@ -73,6 +131,7 @@ void setup()
     ledcAttachPin(L2_PIN, PWM_CHANNEL_2);
     ledcAttachPin(H3_PIN, PWM_CHANNEL_3);
     ledcAttachPin(L3_PIN, PWM_CHANNEL_3);
+    ledcAttachPin(TORK_PIN, PWM_CHANNEL_4);
 
     GPIO.func_out_sel_cfg[L1_PIN].inv_sel = 1;
     GPIO.func_out_sel_cfg[L2_PIN].inv_sel = 1;
@@ -86,10 +145,11 @@ void setup()
     xTaskCreatePinnedToCore(serialTask, "serialTask", 2048, NULL, 1, NULL, 0);
 
     digitalWrite(STATUS_LED_PIN, HIGH);
+    ledcWrite(PWM_CHANNEL_4, 3900);
     serialWrite("Setup Completed.");
 }
 
-void loop()
+void mainCode()
 {
     int rpmRequest = getRpmRequest();
     int rotationInterrupt = getRotation();

@@ -13,9 +13,11 @@
 #define RPMCOUNTER_H
 
 #include <Arduino.h>
+#include "definitions.h"
 
-#define MAX_RPM 50
 #define MIN_RPM 0
+#define MAX_RPM 50
+#define DEBOUNCE_DELAY_MICROS 100000
 
 /**
  * @brief RPM increase request interrupt

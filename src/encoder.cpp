@@ -26,17 +26,28 @@ static volatile float rpm = 0;
  */
 static int findEncoderStepIndex();
 
-void resetRpm()
-{
-    portENTER_CRITICAL(&encoderInterruptMux);
-    rpm = 0;
-    portEXIT_CRITICAL(&encoderInterruptMux);
-}
+/**
+ * @brief Checks if the RPM value is too high
+ *
+ * @param pinRpm Current RPM value
+ * @return float Corrected RPM value
+ */
+static float checkRpmAbsurdity(float pinRpm);
+
+/**
+ * @brief Checks and resets if RPM values are sequential
+ *
+ * @param float Current RPM
+ * @return float Corrected RPM value
+ */
+static float checkRpmResetTime(float pinRpm);
 
 float getRpm()
 {
     float retVal = -1;
     portENTER_CRITICAL(&encoderInterruptMux);
+    rpm = checkRpmAbsurdity(rpm);
+    rpm = checkRpmResetTime(rpm);
     retVal = rpm;
     portEXIT_CRITICAL(&encoderInterruptMux);
     return retVal;
@@ -93,6 +104,39 @@ void IRAM_ATTR encoderInterrupt()
         oldIndex = newIndex;
     }
     portEXIT_CRITICAL(&encoderInterruptMux);
+}
+
+static float checkRpmResetTime(float pinRpm)
+{
+    static int rpmCount = 0;
+    static float oldRpm = 0;
+    if (oldRpm == pinRpm)
+    {
+        rpmCount++;
+    }
+    else
+    {
+        rpmCount = 0;
+    }
+    if (rpmCount > RPM_RESET_COUNT)
+    {
+        rpm = 0;
+        pinRpm = 0;
+        rpmCount = 0;
+    }
+    oldRpm = pinRpm;
+    return pinRpm;
+}
+
+static float checkRpmAbsurdity(float pinRpm)
+{
+    static float oldRpm = pinRpm;
+    if (pinRpm > MAX_RPM + 10)
+    {
+        pinRpm = oldRpm;
+    }
+    oldRpm = pinRpm;
+    return pinRpm;
 }
 
 static int findEncoderStepIndex()

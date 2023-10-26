@@ -15,17 +15,13 @@
 #include <Arduino.h>
 #include <esp_attr.h>
 #include "definitions.h"
+#include "rpmCounter.h"
 
 #define ENCODER_NO_ERROR 0
 #define ENCODER_STEP_READING_ERROR 1
 #define ENCODER_STEP_MISSING_ERROR 2
 #define STEP_TO_REVOLUTION 476
-
-/**
- * @brief Resets RPM of the motor
- * 
- */
-extern void resetRpm();
+#define RPM_RESET_COUNT 100
 
 /**
  * @brief Get the RPM from interrupt
@@ -40,19 +36,6 @@ extern float getRpm();
  * @return int Encoder step
  */
 extern int getEncoderStep();
-
-/**
- * @brief Get the distance as a count of encoder steps
- * 
- * @return int Motor distance
- */
-extern int getDistance();
-
-/**
- * @brief Reset the distance that motor has gone
- * 
- */
-extern void resetDistance();
 
 /**
  * @brief Get the encoder error state

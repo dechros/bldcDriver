@@ -16,14 +16,11 @@
 #include "encoder.h"
 #include "current.h"
 #include "serial.h"
-#include "rpmCounter.h"
 #include "rotation.h"
 
 #define MIN_DUTY 0
 #define MAX_DUTY 500
-#define DANGER_AMPER 5
 #define DUTY_RAMP_VAL 0.25
-#define RPM_RESET_COUNT 250
 
 /**
  * @brief Motor driving task
