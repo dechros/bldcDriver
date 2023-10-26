@@ -32,10 +32,11 @@
 #define TORK_JUMPER_PIN 15
 #define ELEVATOR_LED_PIN 4  
 #define CLOSE_PIN 23    
-#define OPEN_PIN 22       
-#define ELEVATOR_OPEN_PIN 18
+#define FTS_PIN 22
 #define STOP_PIN 21     
-#define X1_JUMPER_PIN 19     
+#define OPEN_PIN 18
+#define TORK_PIN 19     
+#define DIR_PIN 5    
 #define ENCODER_A_PIN 34      
 #define ENCODER_B_PIN 35     
 #define ENCODER_C_PIN 32      

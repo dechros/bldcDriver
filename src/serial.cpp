@@ -29,10 +29,11 @@ void serialTask(void *param)
                 xQueueSend(inputQueue, inputBuffer, portMAX_DELAY);
             }
         }
-        if (xQueueReceive(outputQueue, outputBuffer, portMAX_DELAY))
+        if (xQueueReceive(outputQueue, outputBuffer, 0))
         {
             Serial.println(outputBuffer);
         }
+        
         vTaskDelay(pdMS_TO_TICKS(1));
     }
 }

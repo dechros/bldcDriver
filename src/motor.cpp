@@ -60,8 +60,7 @@ void motorTask(void *pvParameters)
         float current = getCurrent();
         if (current >= DANGER_AMPER)
         {
-            /* TODO: Continue */
-            duty -= DUTY_RAMP_VAL * 10;
+            duty -= DUTY_RAMP_VAL * 2;
         }
         if (checkCurrentError() == true)
         {
@@ -75,7 +74,7 @@ void motorTask(void *pvParameters)
         {
             duty = MAX_DUTY;
         }
-        serialWrite("Tar RPM : " + String(targetRpm) + " | Cur RPM : " + String(rpm) + " | Duty : " + String(duty) + " | Amper : " + String(current));
+        serialWrite("Tar Rot : " + String(requestedRotation) + " | Tar RPM : " + String(targetRpm) + " | Cur RPM : " + String(rpm) + " | Duty : " + String(duty) + " | Amper : " + String(current));
         driveMotor(requestedRotation, (int)duty);
         vTaskDelay(pdMS_TO_TICKS(1));
     }
@@ -86,15 +85,20 @@ static void driveMotor(int pinRotation, int pinDuty)
     int highPwmDuty = 0;
     int lowPwmDuty = 0;
 
-    if (pinRotation == 0)
+    if (pinRotation == LEFT)
     {
         highPwmDuty = MOTOR_DRIVE_DUTY_RES + pinDuty;
         lowPwmDuty = MOTOR_DRIVE_DUTY_RES - pinDuty;
     }
-    if (pinRotation == 1)
+    else if (pinRotation == RIGHT)
     {
         highPwmDuty = MOTOR_DRIVE_DUTY_RES - pinDuty;
         lowPwmDuty = MOTOR_DRIVE_DUTY_RES + pinDuty;
+    }
+    else
+    {
+        highPwmDuty = MOTOR_DRIVE_DUTY_RES;
+        lowPwmDuty = MOTOR_DRIVE_DUTY_RES;
     }
 
     int encoderStep = getEncoderStep();

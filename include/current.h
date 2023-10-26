@@ -17,7 +17,7 @@
 
 #define AMPER_NO_ERROR 0
 #define AMPER_OVER_CURRENT 1
-#define CURRENT_SAMPLE 25
+#define CURRENT_SAMPLE 100
 #define MAX_AMPER 6
 
 /**

@@ -16,8 +16,9 @@
 #include "encoder.h"
 #include "current.h"
 #include "serial.h"
+#include "rpmCounter.h"
+#include "rotation.h"
 
-#define MAX_RPM 70
 #define MIN_DUTY 0
 #define MAX_DUTY 500
 #define DANGER_AMPER 5

@@ -4,9 +4,9 @@
  * @brief Encoder operations file
  * @version 0.1
  * @date 2023-10-15
- * 
+ *
  * @copyright Copyright (c) 2023
- * 
+ *
  */
 
 #include "encoder.h"
@@ -21,7 +21,7 @@ static volatile float rpm = 0;
 
 /**
  * @brief Returns the indes of encoder step as they are sequential
- * 
+ *
  * @return int Encoder step index in the sequence
  */
 static int findEncoderStepIndex();
@@ -63,7 +63,6 @@ int getEncoderErrorState()
 void IRAM_ATTR encoderInterrupt()
 {
     portENTER_CRITICAL(&encoderInterruptMux);
-
     int encoderaState = digitalRead(ENCODER_A_PIN);
     int encoderbState = digitalRead(ENCODER_B_PIN);
     int encodercState = digitalRead(ENCODER_C_PIN);
@@ -80,14 +79,14 @@ void IRAM_ATTR encoderInterrupt()
 
         int indexDiff = newIndex - oldIndex;
 
-        if(indexDiff == 1 || indexDiff == -5 || indexDiff == -1 || indexDiff == 5)
+        if (indexDiff == 1 || indexDiff == -5 || indexDiff == -1 || indexDiff == 5)
         {
             unsigned long currentTime = micros();
-            stepTimeDifference = currentTime - lastStepTime; 
+            stepTimeDifference = currentTime - lastStepTime;
             lastStepTime = currentTime;
             rpm = (1.0 / stepTimeDifference) * 60000000.0 / STEP_TO_REVOLUTION;
         }
-        else if(indexDiff != 0)
+        else if (indexDiff != 0)
         {
             encoderErrorState = ENCODER_STEP_MISSING_ERROR;
         }

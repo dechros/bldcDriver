@@ -13,6 +13,8 @@
 #include "globals.h"
 #include "motor.h"
 #include "serial.h"
+#include "rpmCounter.h"
+#include "rotation.h"
 
 #include <soc/rtc.h>
 #include <rom/rtc.h>
@@ -31,7 +33,6 @@
 #include <BLEUtils.h>
 #include <BLE2902.h>
 
-
 void setup()
 {
     Serial.begin(115200);
@@ -40,6 +41,10 @@ void setup()
     pinMode(ENCODER_B_PIN, INPUT);
     pinMode(ENCODER_C_PIN, INPUT);
     pinMode(FAULT_PIN, INPUT);
+    pinMode(CLOSE_PIN, INPUT);
+    pinMode(FTS_PIN, INPUT);
+    pinMode(STOP_PIN, INPUT);
+    pinMode(OPEN_PIN, INPUT);
 
     pinMode(H1_PIN, OUTPUT);
     pinMode(H2_PIN, OUTPUT);
@@ -48,10 +53,15 @@ void setup()
     pinMode(L2_PIN, OUTPUT);
     pinMode(L3_PIN, OUTPUT);
     pinMode(STATUS_LED_PIN, OUTPUT);
+    pinMode(TORK_PIN, OUTPUT);
 
     attachInterrupt(digitalPinToInterrupt(ENCODER_A_PIN), encoderInterrupt, CHANGE);
     attachInterrupt(digitalPinToInterrupt(ENCODER_B_PIN), encoderInterrupt, CHANGE);
     attachInterrupt(digitalPinToInterrupt(ENCODER_C_PIN), encoderInterrupt, CHANGE);
+    attachInterrupt(digitalPinToInterrupt(FTS_PIN), decreaseRpm, RISING);
+    attachInterrupt(digitalPinToInterrupt(OPEN_PIN), increaseRpm, RISING);
+    attachInterrupt(digitalPinToInterrupt(CLOSE_PIN), rotationInterrupt, RISING);
+    attachInterrupt(digitalPinToInterrupt(STOP_PIN), rotationInterrupt, RISING);
 
     ledcSetup(PWM_CHANNEL_1, MOTOR_PWM_FREQ, MOTOR_PWM_RES);
     ledcSetup(PWM_CHANNEL_2, MOTOR_PWM_FREQ, MOTOR_PWM_RES);
@@ -74,31 +84,16 @@ void setup()
     xTaskCreatePinnedToCore(currentTask, "currentTask", 2048, NULL, 1, NULL, 0);
     xTaskCreatePinnedToCore(motorTask, "motorTask", 2048, NULL, 1, NULL, 0);
     xTaskCreatePinnedToCore(serialTask, "serialTask", 2048, NULL, 1, NULL, 0);
+
+    digitalWrite(STATUS_LED_PIN, HIGH);
     serialWrite("Setup Completed.");
 }
 
-static int motorRotation = 0;
-static int rpm = 0;
-
 void loop()
 {
-    String gelen = serialRead();
-    if (!gelen.isEmpty())
-    {
-        if (gelen == "R")
-        {
-            motorRotation = 1;
-        }
-        else if (gelen == "L")
-        {
-            motorRotation = 0;
-        }
-        else
-        {
-            rpm = gelen.toInt();
-        }
-    }
-    setRpm(rpm);
-    setRotation(motorRotation);
+    int rpmRequest = getRpmRequest();
+    int rotationInterrupt = getRotation();
+    setRpm(rpmRequest);
+    setRotation(rotationInterrupt);
     vTaskDelay(pdMS_TO_TICKS(1));
 }
