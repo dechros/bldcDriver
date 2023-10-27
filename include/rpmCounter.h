@@ -14,22 +14,20 @@
 
 #include <Arduino.h>
 #include "definitions.h"
+#include "encoder.h"
 
 #define MIN_RPM 0
 #define MAX_RPM 50
-#define DEBOUNCE_DELAY_MICROS 100000
+#define MIN_CAPTURE_DUTY 0
+#define MAX_CAPTURE_DUTY 100
+#define RPM_SAMPLE_COUNT 100
+#define RPM_CAPTURE_RESET_COUNT 500
 
 /**
- * @brief RPM increase request interrupt
+ * @brief RPM decrease/increase request interrupt
  * 
  */
-extern void IRAM_ATTR increaseRpm();
-
-/**
- * @brief RPM decrease request interrupt
- * 
- */
-extern void IRAM_ATTR decreaseRpm();
+extern void IRAM_ATTR captureRpmRequest();
 
 /**
  * @brief Get the requested RPM

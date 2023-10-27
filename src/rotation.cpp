@@ -18,18 +18,19 @@ void IRAM_ATTR rotationInterrupt()
 {
     portENTER_CRITICAL_ISR(&rotationCounterMux);
 
-    int closeState = digitalRead(CLOSE_PIN);
-    int stopState = digitalRead(STOP_PIN);
+    int leftState = digitalRead(CLOSE_PIN);
+    int rightState = digitalRead(STOP_PIN);
+    int stopState = digitalRead(FTS_PIN);
 
-    if (closeState == HIGH && stopState == LOW)
+    if (leftState == HIGH && rightState == LOW && stopState == LOW)
     {
         rotation = LEFT;
     }
-    else if (closeState == LOW && stopState == HIGH)
+    else if (leftState == LOW && rightState == HIGH && stopState == LOW)
     {
         rotation = RIGHT;
     }
-    else if (closeState == HIGH && stopState == HIGH)
+    else
     {
         rotation = STOP;
     }

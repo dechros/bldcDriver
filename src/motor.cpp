@@ -58,7 +58,7 @@ void motorTask(void *pvParameters)
         {
             duty = MAX_DUTY;
         }
-        //serialWrite("Tar Rot : " + String(requestedRotation) + " | Tar RPM : " + String(targetRpm) + " | Cur RPM : " + String(rpm) + " | Duty : " + String(duty) + " | Amper : " + String(current));
+        serialWrite("Tar Rot : " + String(requestedRotation) + " | Tar RPM : " + String(targetRpm) + " | Cur RPM : " + String(rpm) + " | Duty : " + String(duty) + " | Amper : " + String(current));
         driveMotor(requestedRotation, (int)duty);
         vTaskDelay(pdMS_TO_TICKS(1));
     }
