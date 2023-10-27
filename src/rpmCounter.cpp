@@ -22,7 +22,7 @@ void IRAM_ATTR increaseRpm()
     unsigned long currentTime = micros();
     if (currentTime - lastUpdateTime >= DEBOUNCE_DELAY_MICROS)
     {
-        rpm++;
+        rpm+=5;
         if (rpm > MAX_RPM)
         {
             rpm = MAX_RPM;
@@ -38,7 +38,7 @@ void IRAM_ATTR decreaseRpm()
     unsigned long currentTime = micros();
     if (currentTime - lastUpdateTime >= DEBOUNCE_DELAY_MICROS)
     {
-        rpm--;
+        rpm-=5;
         if (rpm < MIN_RPM)
         {
             rpm = MIN_RPM;

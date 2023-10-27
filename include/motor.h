@@ -20,7 +20,7 @@
 
 #define MIN_DUTY 0
 #define MAX_DUTY 500
-#define DUTY_RAMP_VAL 0.25
+#define DUTY_RAMP_VAL 0.50
 
 /**
  * @brief Motor driving task
